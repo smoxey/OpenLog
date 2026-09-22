@@ -1,0 +1,39 @@
+{
+  "name": "open-pilot-logbook",
+  "version": "0.1.0",
+  "description": "Open source, privacy-focused, local-first EASA pilot logbook (PWA).",
+  "license": "MIT",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "svelte-check --tsconfig ./tsconfig.json && vite build",
+    "preview": "vite preview",
+    "check": "svelte-check --tsconfig ./tsconfig.json",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "fixtures:regenerate": "vitest run --config vitest.fixtures.config.ts regenerate-export-fixtures",
+    "airports:build": "vitest run --config vitest.fixtures.config.ts build-airports"
+  },
+  "devDependencies": {
+    "@sveltejs/vite-plugin-svelte": "^4.0.0",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/svelte": "^5.4.2",
+    "@testing-library/user-event": "^14.6.5",
+    "@tsconfig/svelte": "^5.0.4",
+    "@types/papaparse": "^5.5.2",
+    "fake-indexeddb": "^6.0.0",
+    "jsdom": "^25.0.1",
+    "svelte": "^5.2.7",
+    "svelte-check": "^4.1.0",
+    "tslib": "^2.8.1",
+    "typescript": "^5.6.3",
+    "vite": "^5.4.11",
+    "vite-plugin-pwa": "^0.21.0",
+    "vitest": "^2.1.6"
+  },
+  "dependencies": {
+    "dexie": "^4.0.10",
+    "papaparse": "^5.5.4"
+  }
+}

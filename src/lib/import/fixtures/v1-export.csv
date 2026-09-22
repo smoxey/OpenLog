@@ -1,0 +1,4 @@
+﻿Date,Departure Place,Departure Time,Arrival Place,Arrival Time,Aircraft Type,Aircraft Registration,Multi-Pilot Time,Total Time of Flight,Name PIC,Landings Day,Landings Night,Operational Condition Time Night,Pilot Function Time PIC,Remarks and Endorsements
+2021-05-14,ENGM,08:00,ENBR,09:12,C172,LN-OLD,0.0,1.2,SELF,1,0,0.0,1.2,First entry
+2021-06-02,ENBR,21:30,ENGM,22:36,C172,LN-OLD,0.0,1.1,SELF,0,1,1.1,1.1,"Night rating, dual"
+2021-07-19,EKCH,07:05,EGLL,09:23,A320,OY-OLD,2.3,2.3,,1,0,0.5,0.0,

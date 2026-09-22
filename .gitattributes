@@ -1,0 +1,12 @@
+# Export fixtures are BYTE-EXACT test expectations: CSV is CRLF-terminated with
+# a UTF-8 BOM, JSON is LF-terminated. This repo is developed on Windows with
+# core.autocrlf=true, which would rewrite both on checkout and break the
+# fixture comparison tests on a fresh clone. Take these files literally.
+src/lib/export/fixtures/** -text
+
+# Import fixtures are byte-exact INPUTS: the RB fixture reproduces that
+# format's real quirks, which include CRLF endings and a final row with no
+# trailing newline. autocrlf=true would rewrite them and quietly destroy the
+# two traps they exist to catch. Scoped to *.csv so the JSON fixture, which is
+# already normalised in the index, is left alone.
+src/lib/import/fixtures/*.csv -text

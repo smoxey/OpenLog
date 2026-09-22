@@ -1,0 +1,44 @@
+node_modules
+dist
+dist-ssr
+*.local
+.env
+.env.*
+.DS_Store
+
+# Editor
+.vscode/*
+!.vscode/extensions.json
+.idea
+
+# Vite / PWA generated
+dev-dist
+
+# Personal logbook data — never commit.
+# Real competitor exports are personal flight history; this repo is public.
+# Committed import fixtures are SYNTHETIC and live in src/lib/**/fixtures/,
+# which these rules deliberately do not touch.
+rb_logbook*.csv
+*_logbook_flights.csv
+private/
+
+# Local probes that read the real logbook out of private/. Named so they are
+# picked up by vitest's src/** glob while staying uncommittable by construction.
+*.probe.test.ts
+
+# The supplied airport coordinate list. The GENERATED src/lib/airports/data.ts
+# is what the app ships and IS committed; the source CSV can be tens of
+# megabytes and adds nothing a rebuild would not reproduce. Commit it
+# deliberately (git add -f) if a particular list is worth pinning.
+# data/airports.seed.csv is committed, and is not matched by this rule.
+data/airports.csv
+
+# The example Airside export the format was characterised from. Personal
+# flight history, same policy as the RB file: never in this repository. The
+# folder name says so too; this makes it impossible to add by accident.
+#
+# NOTE the shape of the second rule: the COMMITTED synthetic fixture is
+# src/lib/import/fixtures/airside.csv, and a rule of "airside*.csv" would have
+# swallowed it. The private copy is named to stay out of its way.
+EXAMPLE, DONT COMMIT OR PUBLISH/
+airside_export*.csv

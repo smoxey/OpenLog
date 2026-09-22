@@ -1,0 +1,42 @@
+{
+  "format": "open-pilot-logbook",
+  "formatVersion": 1,
+  "schemaVersion": 1,
+  "appVersion": "0.0.1",
+  "exportedAt": "2026-03-15T09:00:00.000Z",
+  "flightCount": 1,
+  "flights": [
+    {
+      "id": "11111111-2222-4333-8444-555555555555",
+      "schemaVersion": 1,
+      "date": "2026-03-14",
+      "depAerodrome": "ENGM",
+      "arrAerodrome": "ENBR",
+      "offBlock": "23:40",
+      "onBlock": "00:20",
+      "aircraftType": "C172",
+      "registration": "LN-ABC",
+      "picName": "SELF",
+      "totalMinutes": 42,
+      "picMinutes": 42,
+      "multiPilotMinutes": 0,
+      "nightMinutes": 42,
+      "landingsDay": 0,
+      "landingsNight": 1,
+      "remarks": "Night x-country, \"quoted\" text; commas, and åøæ",
+      "extra": {
+        "approaches": 2,
+        "customTag": "x-country",
+        "importedFrom": "paper-logbook"
+      }
+    }
+  ],
+  "aircraft": [
+    {
+      "registration": "LN-ABC",
+      "type": "C172",
+      "class": "SE",
+      "multiPilot": false
+    }
+  ]
+}

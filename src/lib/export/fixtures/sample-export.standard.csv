@@ -1,0 +1,7 @@
+﻿Date,Departure Place,Departure Time,Arrival Place,Arrival Time,Aircraft Type,Aircraft Registration,Single Pilot Time SE,Single Pilot Time ME,Multi-Pilot Time,Total Time of Flight,Name PIC,Landings Day,Landings Night,Operational Condition Time Night,Operational Condition Time IFR,Pilot Function Time PIC,Pilot Function Time Co-Pilot,Pilot Function Time Dual,Pilot Function Time Instructor,Remarks and Endorsements,Entry Type,FSTD Total Time of Session,FSTD Type,approaches,customTag,instructor,selfBriefed
+2026-07-18,ENGM,10:00,ENBR,11:30,C172,LN-ABC,2.3,0.0,0.0,2.3,SELF,1,0,0.0,0.0,2.3,0.0,0.0,0.0,"Touch, and go; ""circuits"" — Kjeller",flight,0.0,,1,training,,true
+2026-07-18,ENGM,14:00,ENBR,14:00,PA34,N0123,0.0,0.0,0.0,0.0,SELF,0,0,0.0,0.0,0.0,0.0,0.0,0.0,Aborted before taxi,flight,0.0,,,,,
+2026-08-02,ENBR,23:40,ENGM,00:20,C172,LN-ABC,0.7,0.0,0.0,0.7,SELF,0,1,0.7,0.0,0.7,0.0,0.0,0.0,"Night xc; ""solid"" IMC, then VMC
+on descent — Ålesund area",flight,0.0,,2,x-country,,
+2026-08-04,SIM,,SIM,,A320-200-SIM,,0.0,0.0,0.0,0.0,,0,0,0.0,4.0,0.0,0.0,4.0,0.0,LPC/OPC; engine failure after V1,fstd,4.0,EU-DK187,,,,
+2026-08-05,ENGM,10:00,ENBR,11:30,B738,LN-XYZ,0.0,0.0,4.0,4.0,K. Hansen,1,0,0.0,4.0,0.0,4.0,0.0,0.0,"ENGM–ENBR–ENGM, æøå ÄÖÜ ñ 日本語",flight,0.0,,1,,,
