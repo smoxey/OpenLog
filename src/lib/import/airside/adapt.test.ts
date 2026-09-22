@@ -380,3 +380,90 @@ describe('the adapted file through the ordinary importer', () => {
     expect(result.rows.every((row) => row.record.entryType === 'flight')).toBe(true);
   });
 });
+
+describe('the later export: renamed columns, crew numbers, tab-separated', () => {
+  // The shape of a real row, with the employee numbers and the registration
+  // replaced. JFK 19:11 EDT is 23:11Z; 412 minutes later is 06:03Z, which is
+  // 08:03 in Copenhagen — so the row's own arithmetic agrees with both zones.
+  const HEADER = [
+    'Employee id',
+    'Crew id',
+    'Flight',
+    'Departure Date',
+    'Block off',
+    'Arrival Date',
+    'Block on',
+    'Aircraft Registration',
+    'Aircraft Type',
+    'Duration',
+    'Landing',
+    'PIC',
+  ].join('\t');
+  const row = (pic: string) =>
+    ['11111', '11111', 'XY0916-20260918-JFK-CPH', '2026-09-18', '19:11:00', '2026-09-19', '8:03:00', 'LNABC', '333', '412', 'FALSE', pic].join('\t');
+
+  const laterDeps = {
+    toIcao: (code: string) => ({ ...ICAO, JFK: 'KJFK' })[code.toUpperCase()],
+    lookupAirport: (code: string) =>
+      code.toUpperCase() === 'KJFK'
+        ? { code: 'KJFK', lat: 40.6398, lon: -73.7789 }
+        : COORDINATES[code.toUpperCase()],
+  };
+
+  function adaptLater(pic: string) {
+    const parsed = parseCsv(`${HEADER}\r\n${row(pic)}`);
+    if (!parsed.ok) throw new Error(parsed.rejection.message);
+    return adaptAirside(parsed.file, laterDeps, {
+      ...options(),
+      anchors: new Map([['CPH', 'Europe/Copenhagen']]),
+      primaryAirport: 'CPH',
+      hyphenPrefixes: new Set(['LN']),
+      aircraftTypes: new Map(),
+    });
+  }
+
+  function planLater(pic: string) {
+    const adapted = adaptLater(pic);
+    const mapping = buildMapping(adapted.file.headers, AIRSIDE_PRESET, { unit: 'minutes', decimal: '.' });
+    const needs = collectAircraftNeeds(adapted.file.rows, mapping);
+    const aircraft = resolveAircraft(needs, seedAnswers(groupAircraftByType(needs), [], 'ME'), 'ME');
+    return buildImportPlan(
+      adapted.file,
+      mapping,
+      { aircraft: new Map(aircraft.map((a) => [a.registration, a])), fallbackClass: 'ME', makeId: () => 'later' },
+      [],
+      aircraft,
+    );
+  }
+
+  it('reads each local clock and stores UTC', () => {
+    const adapted = cells(adaptLater('22222').file, 2);
+    expect(adapted.Date).toBe('2026-09-18');
+    expect(adapted.Departure).toBe('KJFK');
+    expect(adapted.Arrival).toBe('EKCH');
+    expect(adapted['Block Off']).toBe('23:11');
+    expect(adapted['Block On']).toBe('06:03');
+    expect(adapted['Total Time']).toBe('412');
+    expect(adapted.Registration).toBe('LN-ABC');
+    expect(adapted['Aircraft Type']).toBe('A333');
+    expect(adapted['Zone Assumed']).toBe('');
+  });
+
+  it('logs no PIC time when the commander is someone else', () => {
+    expect(cells(adaptLater('22222').file, 2)['PIC Time']).toBe('0');
+    const record = planLater('22222').rows[0]?.record;
+    expect(record?.picMinutes).toBe(0);
+    expect(record?.coPilotMinutes).toBe(412);
+  });
+
+  it('logs the whole flight as PIC when the commander is this pilot', () => {
+    expect(cells(adaptLater('11111').file, 2)['PIC Time']).toBe('412');
+    const record = planLater('11111').rows[0]?.record;
+    expect(record?.picMinutes).toBe(412);
+    expect(record?.coPilotMinutes).toBe(0);
+  });
+
+  it('claims nothing when the PIC cell is empty', () => {
+    expect(cells(adaptLater('').file, 2)['PIC Time']).toBe('');
+  });
+});

@@ -41,8 +41,11 @@ import {
 } from '../../time/timeOfDay';
 import type { CsvRow, ParsedCsv } from '../csv';
 import {
-  AIRSIDE_HEADERS,
+  airsideColumnIndexes,
+  airsideCrewIndexes,
   hyphenateRegistration,
+  isAirsidePic,
+  parseAirsideDuration,
   parseAirsideFlight,
   parseAirsideLanding,
   registrationPrefix,
@@ -72,6 +75,7 @@ export const ADAPTED_HEADERS = [
   'Ldg Day',
   'Ldg Night',
   'Zone Assumed',
+  'PIC Time',
 ] as const;
 
 // --- Surveying the file, before anything is decided ------------------------
@@ -128,18 +132,18 @@ interface ParsedAirsideRow {
   registration: string;
   model: string;
   landed: boolean;
+  /** Commander of this sector? `null` when the file does not say. */
+  pic: boolean | null;
   /** False when the `Flight` cell did not parse. Everything routed is empty. */
   routed: boolean;
 }
 
-function columnIndexes(headers: readonly string[]): Record<string, number> {
-  const index: Record<string, number> = {};
-  for (const name of AIRSIDE_HEADERS) index[name] = headers.indexOf(name);
-  return index;
+function columnIndexes(headers: readonly string[]) {
+  return { ...airsideColumnIndexes(headers), ...airsideCrewIndexes(headers) };
 }
 
-function readRow(row: CsvRow, at: Record<string, number>): ParsedAirsideRow {
-  const cell = (name: string): string => {
+function readRow(row: CsvRow, at: ReturnType<typeof columnIndexes>): ParsedAirsideRow {
+  const cell = (name: keyof typeof at): string => {
     const index = at[name];
     return index >= 0 ? (row.cells[index] ?? '').trim() : '';
   };
@@ -147,7 +151,7 @@ function readRow(row: CsvRow, at: Record<string, number>): ParsedAirsideRow {
   const identifier = parseAirsideFlight(cell('Flight'));
   const offTime = parseTimeOfDayInput(cell('Block off')) ?? '';
   const onTime = parseTimeOfDayInput(cell('Block on')) ?? '';
-  const total = Number(cell('Total Flight Time'));
+  const total = parseAirsideDuration(cell('Total Flight Time'));
 
   return {
     line: row.line,
@@ -166,6 +170,7 @@ function readRow(row: CsvRow, at: Record<string, number>): ParsedAirsideRow {
     registration: cell('Tail Number'),
     model: cell('Model'),
     landed: parseAirsideLanding(cell('Landing')),
+    pic: isAirsidePic(cell('PIC'), cell('Employee id'), cell('Crew id')),
     routed: identifier !== null,
   };
 }
@@ -426,6 +431,9 @@ export function adaptAirside(
         String(landingsDay),
         String(landingsNight),
         zoneAssumed,
+        // The whole flight when this pilot commanded it, zero when someone
+        // else did, and empty when the file does not say who did.
+        row.pic === null ? '' : row.pic ? String(total) : '0',
       ],
     };
   });

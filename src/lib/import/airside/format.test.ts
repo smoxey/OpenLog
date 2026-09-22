@@ -1,8 +1,10 @@
 import { describe, it, expect } from 'vitest';
 import {
   AIRSIDE_HEADERS,
+  airsideColumnIndexes,
   hyphenateRegistration,
   looksLikeAirside,
+  parseAirsideDuration,
   parseAirsideFlight,
   parseAirsideLanding,
   registrationPrefix,
@@ -22,8 +24,54 @@ describe('recognising an Airside file', () => {
     expect(looksLikeAirside(AIRSIDE_HEADERS.filter((h) => h !== 'Block on'))).toBe(false);
   });
 
+  it('claims the later export, which renames three columns and adds crew columns', () => {
+    const later = [
+      'Employee id',
+      'Crew id',
+      'Flight',
+      'Departure Date',
+      'Block off',
+      'Arrival Date',
+      'Block on',
+      'Aircraft Registration',
+      'Aircraft Type',
+      'Duration',
+      'Landing',
+      'PIC',
+      'SIC',
+    ];
+    expect(looksLikeAirside(later)).toBe(true);
+    const at = airsideColumnIndexes(later);
+    expect(at['Tail Number']).toBe(7);
+    expect(at.Model).toBe(8);
+    expect(at['Total Flight Time']).toBe(9);
+  });
+
+  it('ignores the case and surrounding spaces of a header', () => {
+    expect(looksLikeAirside(AIRSIDE_HEADERS.map((h) => ` ${h.toUpperCase()} `))).toBe(true);
+  });
+
   it('does not claim an RB export, whose columns are different', () => {
     expect(looksLikeAirside(['Date', 'Duty Type', 'Departure', 'Arrival', 'Out', 'In'])).toBe(false);
+  });
+});
+
+describe('the duration column', () => {
+  it('reads whole minutes', () => {
+    expect(parseAirsideDuration('539')).toBe(539);
+    expect(parseAirsideDuration(' 55 ')).toBe(55);
+  });
+
+  it('reads hours and minutes', () => {
+    expect(parseAirsideDuration('8:59')).toBe(539);
+    expect(parseAirsideDuration('08:59')).toBe(539);
+    expect(parseAirsideDuration('08:59:00')).toBe(539);
+  });
+
+  it('refuses anything else rather than inventing a total', () => {
+    expect(parseAirsideDuration('')).toBeNaN();
+    expect(parseAirsideDuration('8h59')).toBeNaN();
+    expect(parseAirsideDuration('8:75')).toBeNaN();
   });
 });
 

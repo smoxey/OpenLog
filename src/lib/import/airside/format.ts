@@ -33,6 +33,42 @@ export const AIRSIDE_HEADERS = [
   'Landing',
 ] as const;
 
+export type AirsideColumn = (typeof AIRSIDE_HEADERS)[number];
+
+/**
+ * Other names the same column goes by.
+ *
+ * Airside exports are not all alike: a later export names three of the nine
+ * columns differently and adds crew columns around them. The values mean the
+ * same thing, so each is an alias of the name above rather than a second
+ * format. Only a name observed in a real export belongs here.
+ */
+const AIRSIDE_ALIASES: Readonly<Partial<Record<AirsideColumn, readonly string[]>>> = {
+  'Tail Number': ['Aircraft Registration'],
+  Model: ['Aircraft Type'],
+  'Total Flight Time': ['Duration'],
+};
+
+const normaliseHeader = (header: string) => header.trim().toLowerCase();
+
+/**
+ * Where each Airside column sits in `headers`, or -1 where it is missing.
+ *
+ * Case-insensitive, because `Block off` and `Block Off` are the same column and
+ * a capital letter is not a reason to read a file as something else.
+ */
+export function airsideColumnIndexes(
+  headers: readonly string[],
+): Record<AirsideColumn, number> {
+  const normalised = headers.map(normaliseHeader);
+  const index = {} as Record<AirsideColumn, number>;
+  for (const name of AIRSIDE_HEADERS) {
+    const names = [name, ...(AIRSIDE_ALIASES[name] ?? [])].map(normaliseHeader);
+    index[name] = normalised.findIndex((header) => names.includes(header));
+  }
+  return index;
+}
+
 /**
  * Does this file look like an Airside export?
  *
@@ -41,8 +77,57 @@ export const AIRSIDE_HEADERS = [
  * then transforms values that meant something else.
  */
 export function looksLikeAirside(headers: readonly string[]): boolean {
-  const present = new Set(headers.map((header) => header.trim()));
-  return AIRSIDE_HEADERS.every((header) => present.has(header));
+  return Object.values(airsideColumnIndexes(headers)).every((index) => index >= 0);
+}
+
+/**
+ * Crew columns a later export adds. Optional: the reference export has none of
+ * them, and a file without them is read exactly as before.
+ */
+export const AIRSIDE_CREW_HEADERS = ['Employee id', 'Crew id', 'PIC'] as const;
+
+export type AirsideCrewColumn = (typeof AIRSIDE_CREW_HEADERS)[number];
+
+/** Where each crew column sits in `headers`, or -1. Case-insensitive. */
+export function airsideCrewIndexes(headers: readonly string[]): Record<AirsideCrewColumn, number> {
+  const normalised = headers.map(normaliseHeader);
+  const index = {} as Record<AirsideCrewColumn, number>;
+  for (const name of AIRSIDE_CREW_HEADERS) index[name] = normalised.indexOf(normaliseHeader(name));
+  return index;
+}
+
+/**
+ * Was the pilot whose export this is the pilot in command of this sector?
+ *
+ * The `PIC` column holds the commander's EMPLOYEE NUMBER, not a flag. It is
+ * this pilot exactly when it equals their own `Employee id` or `Crew id` on
+ * the same row. `null` when the file has no `PIC` column, or the row leaves it
+ * empty — the file said nothing, so nothing is claimed either way.
+ */
+export function isAirsidePic(
+  pic: string,
+  employeeId: string,
+  crewId: string,
+): boolean | null {
+  const commander = pic.trim();
+  if (!commander) return null;
+  const own = [employeeId.trim(), crewId.trim()].filter((id) => id !== '');
+  return own.includes(commander);
+}
+
+/**
+ * The `Total Flight Time` / `Duration` cell, in whole minutes, or `NaN`.
+ *
+ * The reference export writes whole minutes (`539`); an `H:MM` cell (`8:59`)
+ * is read as hours and minutes. Anything else is `NaN`, and the row is
+ * reported rather than given a total nobody wrote.
+ */
+export function parseAirsideDuration(value: unknown): number {
+  const text = String(value ?? '').trim();
+  if (/^\d+(\.\d+)?$/.test(text)) return Math.round(Number(text));
+  const clock = /^(\d{1,3}):([0-5]\d)(?::00)?$/.exec(text);
+  if (clock) return Number(clock[1]) * 60 + Number(clock[2]);
+  return NaN;
 }
 
 /** What the `Flight` column holds, once unpacked. */
@@ -226,6 +311,8 @@ export const AIRSIDE_MODEL_SUGGESTIONS: Readonly<Record<string, string>> = {
   '32N': 'A320',
   '32Q': 'A321',
   '32S': 'A320',
+  '332': 'A332',
+  '333': 'A333',
   '33N': 'A339',
   '359': 'A359',
   '73H': 'B738',

@@ -82,12 +82,17 @@ export const AIRSIDE_PRESET: ImportPreset = {
     // worked out. Mostly empty, and that is the shape of the fact: it names the
     // rows a later doubt about an hour should start from.
     'Zone Assumed': extra('Zone Assumed'),
+
+    // From the `PIC` column, which names the commander by employee number:
+    // the whole flight when that is this pilot, zero when it is not, empty
+    // when the export has no `PIC` column at all.
+    'PIC Time': field('picMinutes'),
   },
 
   notes: [
     'Durations in this format are whole minutes.',
     'Block times were written on local clocks and have been converted to UTC. The on-block is the off-block plus the total flight time, so the stored interval always agrees with the stored total.',
-    'Airside does not record who the pilot in command was, so PIC name is left empty.',
+    'Airside names the pilot in command only by employee number, so PIC name is left empty. PIC time is the whole flight when that number is your own, and zero otherwise.',
     'Airside records no night time. The Night column here was worked out from the route and the clock, not read from the file.',
   ],
 };
