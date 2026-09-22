@@ -21,6 +21,16 @@ import { db } from '../storage/db';
 import { listFlights } from '../storage';
 import { loadSettings } from '../stores/settings.svelte';
 
+/*
+ * The step offers the DEVICE's zone as the first anchor, and the fixture is an
+ * Oslo-based pilot's file. Pinned, so the expected UTC times do not depend on
+ * the clock of whichever machine runs the suite — CI runs on UTC.
+ */
+vi.mock('../time/zoneOffset', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../time/zoneOffset')>()),
+  deviceTimeZone: () => 'Europe/Oslo',
+}));
+
 const FIXTURE = path.join(
   path.dirname(fileURLToPath(import.meta.url)),
   '..',
